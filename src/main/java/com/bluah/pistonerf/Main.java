@@ -7,6 +7,7 @@ import org.bukkit.command.PluginCommand;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPistonExtendEvent;
+import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -35,29 +36,33 @@ public final class Main extends JavaPlugin implements Listener {
         Bukkit.getPluginManager().registerEvents(this, this);
     }
 
-    @EventHandler
-    public void onPiston(BlockPistonExtendEvent e) {
-        if (getConfig().getBoolean("disable_piston_by_block")) {
-            List<Material> movingMaterials = e.getBlocks().stream().map(Block::getType).collect(Collectors.toList());
-
-            if (movingMaterials.stream().anyMatch(disabledBlocks::contains)) {
-                e.setCancelled(true);
-                if (getConfig().getBoolean("break_piston_on_disable")) {
-                    Block piston = e.getBlock();
-                    if (getConfig().getBoolean("drop_piston_on_break")) {
-                        piston.getWorld().dropItemNaturally(piston.getLocation(), new ItemStack(Material.PISTON));
-                    }
-                    piston.setType(Material.AIR);
-                }
-            }
+    @EventHandler(ignoreCancelled = true)
+    public void onPistonExtend(BlockPistonExtendEvent e) {
+        if (containsDisabledBlock(e.getBlocks())) {
+            e.setCancelled(true);
         }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onPistonRetract(BlockPistonRetractEvent e) {
+        if (containsDisabledBlock(e.getBlocks())) {
+            e.setCancelled(true);
+        }
+    }
+
+    private boolean containsDisabledBlock(List<Block> blocks) {
+        return blocks.stream().map(Block::getType).anyMatch(disabledBlocks::contains);
     }
 
     public void loadDisabledBlocks() {
         disabledBlocks.clear();
         getConfig().getStringList("disabled_blocks").forEach(name -> {
             Material material = Material.matchMaterial(name);
-            if (material != null) disabledBlocks.add(material);
+            if (material != null) {
+                disabledBlocks.add(material);
+            } else {
+                getLogger().warning("Invalid block name in config: " + name);
+            }
         });
     }
 }
