@@ -1,0 +1,32 @@
+# The main purpose of this plugin is to disable selected blocks from being affected by pistons. 
+# This is useful to nerf farms or disable flying machines altogether.
+
+# After changing config, run command "/pn reload" in game or in console to finalize the changes.
+
+# This option essentially, enables or disables the entire plugin while keeping the list of disabled blocks intact.
+# When set to true, pistons will be disabled for the blocks listed below.
+# When set to false, the plugin will not affect any blocks or pistons. 
+disable_piston_by_block: true
+
+# Determines if slime and honey blocks can interact with crop blocks
+slime_honey_crop_interaction: false
+
+# Add or Remove blocks. Use the following link as guidance for formatting block names 
+# https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Material.html
+disabled_blocks:
+  - PUMPKIN
+  - MELON
+  - SUGAR_CANE
+  - BAMBOO_SAPLING
+  - BAMBOO
+
+# Please note that a single bamboo shoot in the ground is classified as BAMBOO_SAPLING.
+# A bamboo shoot that has grown two blocks or higher is classified as BAMBOO.
+
+# When set to false, disabled pistons will stay where they are placed, and simply not work to break any disabled blocks. 
+# When set to true, disabled pistons will break upon attempted firing. 
+break_piston_on_disable: false
+
+# When set to true, pistons will drop to the ground if broken by the plugin.
+# When se to false, pistons will disappear if broken by the plugin. 
+drop_piston_on_break: true
