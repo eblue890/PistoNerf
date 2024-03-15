@@ -7,20 +7,18 @@ description: Modifies piston behavior based on configured settings
 
 commands:
   pistonerf:
-    description: Manages Pistonerf configuration settings.
+    description: Allows players and administrators to manage blocks that are disabled from piston interaction.
     usage: |
-      /pistonerf reload - Reloads the configuration.
+      /pistonerf add <block> - Adds a block to the disabled list.
+      /pistonerf remove <block> - Removes a block from the disabled list.
       /pistonerf list - Lists all disabled blocks.
-      /pistonerf add blocks <material> - Adds a block to the disabled blocks list.
-      /pistonerf remove blocks <material> - Removes a block from the disabled blocks list.
-      /pistonerf add slime_honey <material> - Adds a block to the disabled slime/honey interactions list.
-      /pistonerf remove slime_honey <material> - Removes a block from the disabled slime/honey interactions list.
+      /pistonerf reload - Reloads the plugin configuration.
     aliases: [pn]
 
 permissions:
   pistonerf.reload:
-    description: Allows reloading the Pistonerf configuration.
+    description: Allows reloading the Pistonerf configuration
     default: op
   pistonerf.modify:
-    description: Allows modifying the list of disabled blocks and slime/honey interactions.
+    description: Allows modifying the list of disabled blocks
     default: op

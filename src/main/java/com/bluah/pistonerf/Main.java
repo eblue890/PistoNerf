@@ -18,19 +18,17 @@ import java.util.stream.Collectors;
 public final class Main extends JavaPlugin implements Listener {
 
     private Set<Material> disabledBlocks = new HashSet<>();
-    private Set<Material> disabledSlimeHoneyInteractions = new HashSet<>();
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
         loadDisabledBlocks();
-        loadDisabledSlimeHoneyInteractions();
 
         PluginCommand pistonerfCommand = getCommand("pistonerf");
         if (pistonerfCommand != null) {
             ConfigCommand configCommand = new ConfigCommand(this);
             pistonerfCommand.setExecutor(configCommand);
-            pistonerfCommand.setTabCompleter(configCommand); // Set the TabCompleter
+            pistonerfCommand.setTabCompleter(configCommand);
         } else {
             getLogger().severe("Failed to register command 'pistonerf'. Check your plugin.yml file.");
         }
@@ -40,7 +38,9 @@ public final class Main extends JavaPlugin implements Listener {
     @EventHandler
     public void onPiston(BlockPistonExtendEvent e) {
         if (getConfig().getBoolean("disable_piston_by_block")) {
-            if (e.getBlocks().stream().anyMatch(block -> disabledBlocks.contains(block.getType()))) {
+            List<Material> movingMaterials = e.getBlocks().stream().map(Block::getType).collect(Collectors.toList());
+
+            if (movingMaterials.stream().anyMatch(disabledBlocks::contains)) {
                 e.setCancelled(true);
                 if (getConfig().getBoolean("break_piston_on_disable")) {
                     Block piston = e.getBlock();
@@ -49,41 +49,15 @@ public final class Main extends JavaPlugin implements Listener {
                     }
                     piston.setType(Material.AIR);
                 }
-                return;
-            }
-        }
-
-        if (getConfig().getBoolean("disable_slime_honey_interaction_by_block")) {
-            List<Material> movingMaterials = e.getBlocks().stream().map(Block::getType).collect(Collectors.toList());
-            boolean containsSlimeOrHoney = movingMaterials.contains(Material.SLIME_BLOCK) || movingMaterials.contains(Material.HONEY_BLOCK);
-            boolean affectsDisabledBlocks = movingMaterials.stream().anyMatch(disabledSlimeHoneyInteractions::contains);
-
-            if (containsSlimeOrHoney && affectsDisabledBlocks) {
-                e.setCancelled(true);
-                return;
             }
         }
     }
 
     public void loadDisabledBlocks() {
         disabledBlocks.clear();
-        List<String> blockNames = getConfig().getStringList("disabled_blocks");
-        for (String name : blockNames) {
+        getConfig().getStringList("disabled_blocks").forEach(name -> {
             Material material = Material.matchMaterial(name);
-            if (material != null) {
-                disabledBlocks.add(material);
-            }
-        }
-    }
-
-    public void loadDisabledSlimeHoneyInteractions() {
-        disabledSlimeHoneyInteractions.clear();
-        List<String> blockNames = getConfig().getStringList("disabled_slime_honey_interactions");
-        for (String name : blockNames) {
-            Material material = Material.matchMaterial(name);
-            if (material != null) {
-                disabledSlimeHoneyInteractions.add(material);
-            }
-        }
+            if (material != null) disabledBlocks.add(material);
+        });
     }
 }

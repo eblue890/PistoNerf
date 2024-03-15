@@ -22,7 +22,7 @@ public class ConfigCommand implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length < 1) {
-            sender.sendMessage(ChatColor.RED + "Usage: /pistonerf add|remove|list|reload");
+            sender.sendMessage(ChatColor.RED + "Usage: /pistonerf add|remove|list|reload <material>");
             return true;
         }
 
@@ -30,25 +30,25 @@ public class ConfigCommand implements CommandExecutor, TabCompleter {
         switch (subcommand) {
             case "reload":
                 plugin.reloadConfig();
-                plugin.loadDisabledSlimeHoneyInteractions(); // Load the new configuration for slime/honey interactions
+                plugin.loadDisabledBlocks(); // Reload the blocks disabled for interaction
                 sender.sendMessage(ChatColor.GREEN + "Config reloaded.");
                 return true;
             case "list":
-                sender.sendMessage(ChatColor.GREEN + "Disabled blocks:");
                 List<String> disabledBlocks = plugin.getConfig().getStringList("disabled_blocks");
                 if (disabledBlocks.isEmpty()) {
-                    sender.sendMessage(ChatColor.RED + "No blocks are currently disabled.");
+                    sender.sendMessage(ChatColor.GREEN + "No blocks are currently disabled.");
                 } else {
+                    sender.sendMessage(ChatColor.GREEN + "Disabled blocks:");
                     disabledBlocks.forEach(blockName -> sender.sendMessage(ChatColor.GREEN + "- " + blockName));
                 }
                 return true;
             case "add":
             case "remove":
-                if (args.length < 3) {
-                    sender.sendMessage(ChatColor.RED + "Usage: /" + label + " " + subcommand + " blocks|slime_honey <material>");
+                if (args.length < 2) {
+                    sender.sendMessage(ChatColor.RED + "Usage: /" + label + " " + subcommand + " <material>");
                     return true;
                 }
-                handleMaterialModification(subcommand, args[1], args[2], sender);
+                handleMaterialModification(subcommand, args[1], sender);
                 return true;
             default:
                 sender.sendMessage(ChatColor.RED + "Invalid command. Use add, remove, list, or reload.");
@@ -56,7 +56,7 @@ public class ConfigCommand implements CommandExecutor, TabCompleter {
         }
     }
 
-    private void handleMaterialModification(String action, String listType, String materialNameInput, CommandSender sender) {
+    private void handleMaterialModification(String action, String materialNameInput, CommandSender sender) {
         String materialName = materialNameInput.toUpperCase();
         Material material = Material.matchMaterial(materialName);
         if (material == null) {
@@ -65,43 +65,26 @@ public class ConfigCommand implements CommandExecutor, TabCompleter {
         }
 
         FileConfiguration config = plugin.getConfig();
-        List<String> targetList;
-        if ("blocks".equalsIgnoreCase(listType)) {
-            targetList = config.getStringList("disabled_blocks");
-        } else if ("slime_honey".equalsIgnoreCase(listType)) {
-            targetList = config.getStringList("disabled_slime_honey_interactions");
-        } else {
-            sender.sendMessage(ChatColor.RED + "Invalid list type. Use 'blocks' or 'slime_honey'.");
-            return;
-        }
+        List<String> disabledBlocks = config.getStringList("disabled_blocks");
 
-        boolean modified = false;
         if ("add".equalsIgnoreCase(action)) {
-            if (!targetList.contains(materialName)) {
-                targetList.add(materialName);
-                modified = true;
+            if (!disabledBlocks.contains(materialName)) {
+                disabledBlocks.add(materialName);
+                sender.sendMessage(ChatColor.GREEN + materialName + " has been added to the disabled blocks list.");
             } else {
-                sender.sendMessage(ChatColor.YELLOW + materialName + " is already in the list.");
+                sender.sendMessage(ChatColor.YELLOW + materialName + " is already in the disabled blocks list.");
             }
         } else if ("remove".equalsIgnoreCase(action)) {
-            modified = targetList.remove(materialName);
-            if (modified) {
-                sender.sendMessage(ChatColor.GREEN + materialName + " has been removed from the list.");
+            if (disabledBlocks.remove(materialName)) {
+                sender.sendMessage(ChatColor.GREEN + materialName + " has been removed from the disabled blocks list.");
             } else {
-                sender.sendMessage(ChatColor.YELLOW + materialName + " was not found in the list.");
+                sender.sendMessage(ChatColor.YELLOW + materialName + " is not in the disabled blocks list.");
             }
         }
 
-        if (modified) {
-            if ("blocks".equalsIgnoreCase(listType)) {
-                config.set("disabled_blocks", targetList);
-            } else {
-                config.set("disabled_slime_honey_interactions", targetList);
-            }
-            plugin.saveConfig();
-            plugin.loadDisabledBlocks(); // Reload disabled blocks
-            plugin.loadDisabledSlimeHoneyInteractions(); // Reload disabled slime/honey interactions
-        }
+        config.set("disabled_blocks", disabledBlocks);
+        plugin.saveConfig();
+        plugin.loadDisabledBlocks(); // Reload the updated list of disabled blocks
     }
 
     @Override
@@ -109,9 +92,7 @@ public class ConfigCommand implements CommandExecutor, TabCompleter {
         if (args.length == 1) {
             return List.of("add", "remove", "list", "reload");
         } else if (args.length == 2) {
-            return List.of("blocks", "slime_honey");
-        } else if (args.length == 3) {
-            return getAllMaterialNames().stream().filter(s -> s.startsWith(args[2].toUpperCase())).collect(Collectors.toList());
+            return getAllMaterialNames().stream().filter(s -> s.startsWith(args[1].toUpperCase())).collect(Collectors.toList());
         }
         return new ArrayList<>();
     }
