@@ -7,22 +7,25 @@ import org.bukkit.command.PluginCommand;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPistonExtendEvent;
-import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
+import java.util.stream.Collectors;
 
 public final class Main extends JavaPlugin implements Listener {
 
-    private final Set<Material> disabledBlocks = new HashSet<>();
+    private Set<Material> disabledBlocks = new HashSet<>();
+    private Set<Material> disabledSlimeHoneyInteractions = new HashSet<>();
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
+        loadDisabledBlocks();
+        loadDisabledSlimeHoneyInteractions();
+
         PluginCommand pistonerfCommand = getCommand("pistonerf");
         if (pistonerfCommand != null) {
             ConfigCommand configCommand = new ConfigCommand(this);
@@ -32,62 +35,54 @@ public final class Main extends JavaPlugin implements Listener {
             getLogger().severe("Failed to register command 'pistonerf'. Check your plugin.yml file.");
         }
         Bukkit.getPluginManager().registerEvents(this, this);
-        updateDisabledBlocks();
     }
 
-    @EventHandler(ignoreCancelled = true)
-    private void onPistonExtend(BlockPistonExtendEvent e) {
-        boolean restrictCropInteraction = getConfig().getBoolean("slime_honey_crop_interaction");
-        getLogger().info("restrictCropInteraction: " + restrictCropInteraction); // Log for debugging. this log shows that the config is being read and changes correctly
-        if (restrictCropInteraction && affectsRestrictedBlocks(e.getBlocks())) {
-            e.setCancelled(true);
+    @EventHandler
+    public void onPiston(BlockPistonExtendEvent e) {
+        if (getConfig().getBoolean("disable_piston_by_block")) {
+            if (e.getBlocks().stream().anyMatch(block -> disabledBlocks.contains(block.getType()))) {
+                e.setCancelled(true);
+                if (getConfig().getBoolean("break_piston_on_disable")) {
+                    Block piston = e.getBlock();
+                    if (getConfig().getBoolean("drop_piston_on_break")) {
+                        piston.getWorld().dropItemNaturally(piston.getLocation(), new ItemStack(Material.PISTON));
+                    }
+                    piston.setType(Material.AIR);
+                }
+                return;
+            }
         }
 
-        if (getConfig().getBoolean("disable_piston_by_block")) {
-            for (Block block : e.getBlocks()) {
-                if (disabledBlocks.contains(block.getType())) {
-                    e.setCancelled(true);
-                    if (getConfig().getBoolean("break_piston_on_disable")) {
-                        Block piston = e.getBlock();
-                        if (getConfig().getBoolean("drop_piston_on_break")) {
-                            piston.getWorld().dropItemNaturally(piston.getLocation(), new ItemStack(Material.PISTON));
-                        }
-                        piston.setType(Material.AIR);
-                    }
-                    break;
-                }
+        if (getConfig().getBoolean("disable_slime_honey_interaction_by_block")) {
+            List<Material> movingMaterials = e.getBlocks().stream().map(Block::getType).collect(Collectors.toList());
+            boolean containsSlimeOrHoney = movingMaterials.contains(Material.SLIME_BLOCK) || movingMaterials.contains(Material.HONEY_BLOCK);
+            boolean affectsDisabledBlocks = movingMaterials.stream().anyMatch(disabledSlimeHoneyInteractions::contains);
+
+            if (containsSlimeOrHoney && affectsDisabledBlocks) {
+                e.setCancelled(true);
+                return;
             }
         }
     }
 
-    @EventHandler(ignoreCancelled = true)
-    private void onPistonRetract(BlockPistonRetractEvent e) {
-        if (getConfig().getBoolean("slime_honey_crop_interaction") && affectsRestrictedBlocks(e.getBlocks())) {
-            e.setCancelled(true);
+    public void loadDisabledBlocks() {
+        disabledBlocks.clear();
+        List<String> blockNames = getConfig().getStringList("disabled_blocks");
+        for (String name : blockNames) {
+            Material material = Material.matchMaterial(name);
+            if (material != null) {
+                disabledBlocks.add(material);
+            }
         }
     }
 
-    private boolean affectsRestrictedBlocks(List<Block> blocks) {
-        boolean containsSlimeOrHoney = blocks.stream()
-                .map(Block::getType)
-                .anyMatch(type -> type == Material.SLIME_BLOCK || type == Material.HONEY_BLOCK);
-
-        boolean affectsCropBlocks = blocks.stream()
-                .map(Block::getType)
-                .anyMatch(CropBlocks::isCrop);
-
-        return containsSlimeOrHoney && affectsCropBlocks;
-    }
-
-    public void updateDisabledBlocks() {
-        disabledBlocks.clear();
-        List<String> disabledBlocksList = getConfig().getStringList("disabled_blocks");
-        for (String blockName : disabledBlocksList) {
-            Material material = Material.matchMaterial(blockName);
+    public void loadDisabledSlimeHoneyInteractions() {
+        disabledSlimeHoneyInteractions.clear();
+        List<String> blockNames = getConfig().getStringList("disabled_slime_honey_interactions");
+        for (String name : blockNames) {
+            Material material = Material.matchMaterial(name);
             if (material != null) {
-                disabledBlocks.add(material);
-            } else {
-                getLogger().warning("Invalid block name in config: " + blockName);
+                disabledSlimeHoneyInteractions.add(material);
             }
         }
     }
