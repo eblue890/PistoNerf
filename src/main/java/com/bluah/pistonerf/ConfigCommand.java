@@ -22,7 +22,6 @@ public class ConfigCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        // Removed player-only check, allowing console execution
 
         if (args.length < 1) {
             sender.sendMessage(ChatColor.RED + "Usage: /pistonerf add|remove|list|reload <material>");
@@ -34,7 +33,7 @@ public class ConfigCommand implements CommandExecutor, TabCompleter {
         switch (subcommand) {
             case "reload":
                 plugin.reloadConfig();
-                plugin.updateDisabledBlocks(); // Update disabledBlocks set
+                plugin.updateDisabledBlocks();
                 sender.sendMessage(ChatColor.GREEN + "Config reloaded.");
                 return true;
             case "list":

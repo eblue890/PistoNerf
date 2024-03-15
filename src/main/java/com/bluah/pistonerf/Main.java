@@ -14,7 +14,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
+
 
 public final class Main extends JavaPlugin implements Listener {
 
@@ -38,6 +38,7 @@ public final class Main extends JavaPlugin implements Listener {
     @EventHandler(ignoreCancelled = true)
     private void onPistonExtend(BlockPistonExtendEvent e) {
         boolean restrictCropInteraction = getConfig().getBoolean("slime_honey_crop_interaction");
+        getLogger().info("restrictCropInteraction: " + restrictCropInteraction); // Log for debugging. this log shows that the config is being read and changes correctly
         if (restrictCropInteraction && affectsRestrictedBlocks(e.getBlocks())) {
             e.setCancelled(true);
         }
@@ -73,7 +74,7 @@ public final class Main extends JavaPlugin implements Listener {
 
         boolean affectsCropBlocks = blocks.stream()
                 .map(Block::getType)
-                .anyMatch(CropBlocks::isCrop); // Make sure CropBlocks.isCrop() is correctly implemented
+                .anyMatch(CropBlocks::isCrop);
 
         return containsSlimeOrHoney && affectsCropBlocks;
     }
