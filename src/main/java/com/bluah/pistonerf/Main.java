@@ -3,6 +3,8 @@ package com.bluah.pistonerf;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.type.PistonHead;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -52,16 +54,10 @@ public final class Main extends JavaPlugin implements Listener {
         List<Material> movingMaterials = blocks.stream().map(Block::getType).collect(Collectors.toList());
         boolean containsSlimeOrHoney = movingMaterials.contains(Material.SLIME_BLOCK) || movingMaterials.contains(Material.HONEY_BLOCK);
 
-        if (containsSlimeOrHoney && getConfig().getBoolean("disable_slime_honey_interaction_by_block")) {
-            if (movingMaterials.stream().anyMatch(disabledSlimeHoneyInteractions::contains)) {
-                setEventCancelled(event);
-                handlePistonBreaking(piston);
-            }
-        } else if (getConfig().getBoolean("disable_piston_by_block")) {
-            if (movingMaterials.stream().anyMatch(disabledBlocks::contains)) {
-                setEventCancelled(event);
-                handlePistonBreaking(piston);
-            }
+        if ((containsSlimeOrHoney && getConfig().getBoolean("disable_slime_honey_interaction_by_block") && movingMaterials.stream().anyMatch(disabledSlimeHoneyInteractions::contains)) ||
+                (!containsSlimeOrHoney && getConfig().getBoolean("disable_piston_by_block") && movingMaterials.stream().anyMatch(disabledBlocks::contains))) {
+            setEventCancelled(event);
+            handlePistonBreaking(piston);
         }
     }
 
@@ -75,10 +71,13 @@ public final class Main extends JavaPlugin implements Listener {
 
     private void handlePistonBreaking(Block piston) {
         if (getConfig().getBoolean("break_piston_on_disable")) {
+            Material pistonMaterial = piston.getType(); // Determine the type of piston
+            piston.setType(Material.AIR); // Remove the piston block
+
             if (getConfig().getBoolean("drop_piston_on_break")) {
-                piston.getWorld().dropItemNaturally(piston.getLocation(), new ItemStack(Material.PISTON));
+                // Ensure the correct item is dropped based on the piston type
+                piston.getWorld().dropItemNaturally(piston.getLocation(), new ItemStack(pistonMaterial, 1));
             }
-            piston.setType(Material.AIR);
         }
     }
 
