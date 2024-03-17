@@ -2,23 +2,18 @@ name: Pistonerf
 version: '1.0'
 main: com.bluah.pistonerf.Main
 api-version: 1.20
-authors: [ Bluah ]
-description: Modifies piston behavior based on configured settings
+authors: [Bluah]
+description: Modifies piston behavior based on configured settings.
 
 commands:
   pistonerf:
-    description: Allows players and administrators to manage blocks that are disabled from piston interaction.
-    usage: |
-      /pistonerf add <block> - Adds a block to the disabled list.
-      /pistonerf remove <block> - Removes a block from the disabled list.
-      /pistonerf list - Lists all disabled blocks.
-      /pistonerf reload - Reloads the plugin configuration.
+    description: Reloads the Pistonerf plugin configuration.
+    usage: /<command> reload
     aliases: [pn]
+    permission: pistonerf.reload
+    permission-message: You do not have permission to perform this command.
 
 permissions:
   pistonerf.reload:
-    description: Allows reloading the Pistonerf configuration
-    default: op
-  pistonerf.modify:
-    description: Allows modifying the list of disabled blocks
+    description: Allows reloading the Pistonerf configuration.
     default: op
