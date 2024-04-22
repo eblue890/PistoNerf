@@ -36,3 +36,6 @@ break_piston_on_disable: false
 # When set to true, pistons will drop to the ground if broken by the plugin.
 # When se to false, pistons will disappear if broken by the plugin. 
 drop_piston_on_break: true
+
+# When true, allows minecarts pushed by slime or honey blocks to interact with blocks otherwise restricted
+allow_minecart_interactions: false

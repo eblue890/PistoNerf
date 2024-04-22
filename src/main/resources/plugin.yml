@@ -1,5 +1,5 @@
 name: Pistonerf
-version: '1.0'
+version: '1.2'
 main: com.bluah.pistonerf.Main
 api-version: 1.20
 authors: [Bluah]
