@@ -7,6 +7,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Dispenser;
+import org.bukkit.block.data.type.Observer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
@@ -149,6 +150,27 @@ public final class Main extends JavaPlugin implements Listener, org.bukkit.comma
     public void onPistonRetract(BlockPistonRetractEvent e) {
         handlePistonMovement(e.getBlocks(), e.getBlock(), e);
     }
+
+    @EventHandler
+    public void onObserverUpdate(BlockRedstoneEvent event) {
+        Block block = event.getBlock();
+        if (block.getType() == Material.OBSERVER) {
+            Observer observer = (Observer) block.getBlockData();
+            Block observedBlock = block.getRelative(observer.getFacing());
+
+            if (disabledObserverBlocks.contains(observedBlock.getType())) {
+                if (observer.isPowered()) {
+                    // Manually reset the observer state
+                    Bukkit.getScheduler().runTaskLater(this, () -> {
+                        observer.setPowered(false);
+                        block.setBlockData(observer);
+                    }, 1L); // Delay of 1 tick to allow for state update
+                    event.setNewCurrent(event.getOldCurrent()); // Prevent signal change
+                }
+            }
+        }
+    }
+
 
     private void handlePistonMovement(List<Block> blocks, Block piston, Object event) {
         List<Material> movingMaterials = blocks.stream().map(Block::getType).collect(Collectors.toList());
