@@ -19,6 +19,9 @@ import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.block.data.Directional;
+import org.bukkit.event.block.BlockRedstoneEvent;
+import org.bukkit.block.data.BlockData;
+
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -32,6 +35,7 @@ public final class Main extends JavaPlugin implements Listener, org.bukkit.comma
     private Set<Material> disabledSlimeHoneyInteractions = new HashSet<>();
     private Set<Material> disabledDispenserItems = new HashSet<>();
     private Set<Material> disabledDispenserBlocks = new HashSet<>();
+    private Set<Material> disabledObserverBlocks = new HashSet<>();
 
     @Override
     public void onEnable() {
@@ -40,9 +44,9 @@ public final class Main extends JavaPlugin implements Listener, org.bukkit.comma
         loadDisabledBlocks();
         loadDisabledSlimeHoneyInteractions();
         loadDispenserConfigs();
+        loadObserverConfigs();
 
         getCommand("pistonerf").setExecutor(this);
-        getCommand("pistonerf").setTabCompleter(this);
         Bukkit.getPluginManager().registerEvents(this, this);
     }
 
@@ -54,6 +58,7 @@ public final class Main extends JavaPlugin implements Listener, org.bukkit.comma
                 loadDisabledBlocks();
                 loadDisabledSlimeHoneyInteractions();
                 loadDispenserConfigs();
+                loadObserverConfigs();
                 sender.sendMessage(ChatColor.GREEN + "Pistonerf configuration reloaded.");
                 return true;
             }
@@ -93,6 +98,19 @@ public final class Main extends JavaPlugin implements Listener, org.bukkit.comma
             }
         }
     }
+    private void loadObserverConfigs() {
+        disabledObserverBlocks.clear();
+        if (getConfig().getBoolean("anti-observer-enable")) {
+            List<String> blocks = getConfig().getStringList("disabled-observer-blocks");
+            for (String block : blocks) {
+                Material mat = Material.matchMaterial(block);
+                if (mat != null) {
+                    disabledObserverBlocks.add(mat);
+                }
+            }
+        }
+    }
+
 
     @EventHandler
     public void onDispense(BlockDispenseEvent event) {
@@ -108,6 +126,19 @@ public final class Main extends JavaPlugin implements Listener, org.bukkit.comma
             }
         }
     }
+    @EventHandler
+    public void onRedstoneChange(BlockRedstoneEvent event) {
+        Block block = event.getBlock();
+        if (block.getType() == Material.OBSERVER) {
+            Directional directional = (Directional) block.getBlockData();
+            BlockFace facing = directional.getFacing();
+            Block observedBlock = block.getRelative(facing);
+            if (disabledObserverBlocks.contains(observedBlock.getType())) {
+                event.setNewCurrent(event.getOldCurrent());
+            }
+        }
+    }
+
 
     @EventHandler
     public void onPistonExtend(BlockPistonExtendEvent e) {

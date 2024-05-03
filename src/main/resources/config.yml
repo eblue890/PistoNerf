@@ -53,6 +53,14 @@ disabled-dispenser-items:
 disabled-dispenser-blocks:
   - GRASS_BLOCK
   - PUMPKIN_STEM
+  - MELON_STEM
   - CARROTS
   - POTATOES
   - WHEAT
+
+# Enable anti-observer
+anti-observer-enable: false
+# List of blocks that cannot trigger observers when anti-observer-enable is set to true.
+disabled-observer-blocks:
+  - SUGAR_CANE
+  - BAMBOO
