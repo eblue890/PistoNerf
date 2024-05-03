@@ -10,6 +10,7 @@ disable_piston_by_block: true
 # https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Material.html
 disabled_blocks:
   - PUMPKIN
+  - CARVED_PUMPKIN
   - MELON
   - SUGAR_CANE
   - BAMBOO_SAPLING
@@ -24,6 +25,7 @@ disable_slime_honey_interaction_by_block: true
 # Determines if slime and honey blocks can interact with crop blocks
 disabled_slime_honey_interactions:
   - PUMPKIN
+  - CARVED_PUMPKIN
   - MELON
   - SUGAR_CANE
   - BAMBOO_SAPLING
@@ -39,3 +41,18 @@ drop_piston_on_break: true
 
 # When true, allows minecarts pushed by slime or honey blocks to interact with blocks otherwise restricted
 allow_minecart_interactions: false
+
+# Enable anti-dispenser
+anti-dispenser-enable: true
+
+# List of disabled dispenser materials
+disabled-dispenser-items:
+  - BONE_MEAL
+
+# List of disabled blocks to be affected by dispensers.
+disabled-dispenser-blocks:
+  - GRASS_BLOCK
+  - PUMPKIN_STEM
+  - CARROTS
+  - POTATOES
+  - WHEAT
