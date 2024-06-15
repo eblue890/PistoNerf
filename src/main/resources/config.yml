@@ -64,3 +64,6 @@ anti-observer-enable: false
 disabled-observer-blocks:
   - SUGAR_CANE
   - BAMBOO
+
+# Disables Villagers from harvesting crops when set to true
+prevent-villager-harvesting: false

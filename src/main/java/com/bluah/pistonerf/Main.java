@@ -7,16 +7,19 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Dispenser;
+import org.bukkit.block.data.Ageable;
 import org.bukkit.block.data.type.Observer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Minecart;
+import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockDispenseEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPistonRetractEvent;
+import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.block.data.Directional;
@@ -170,6 +173,24 @@ public final class Main extends JavaPlugin implements Listener, org.bukkit.comma
             }
         }
     }
+    @EventHandler
+    public void onVillagerHarvest(EntityChangeBlockEvent event) {
+        if (!(event.getEntity() instanceof Villager)) {
+            return; // Exit if the entity is not a villager
+        }
+
+        // Check if the block change is from a fully mature crop (assuming it's Ageable like wheat, carrots, etc.)
+        if (event.getBlock().getBlockData() instanceof Ageable) {
+            Ageable ageable = (Ageable) event.getBlock().getBlockData();
+            if (ageable.getAge() == ageable.getMaximumAge()) {
+                // Check config if preventing villager harvesting is enabled
+                if (getConfig().getBoolean("prevent-villager-harvesting")) {
+                    event.setCancelled(true);
+                }
+            }
+        }
+    }
+
 
 
     private void handlePistonMovement(List<Block> blocks, Block piston, Object event) {
