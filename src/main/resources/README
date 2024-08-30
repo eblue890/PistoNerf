@@ -1,0 +1,24 @@
+
+ PistoNerf - A Minecraft plugin for nerfing various auto farming methods.
+ Copyright (C) 2024 Erika Blue
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the MIT License.
+
+ You should have received a copy of the MIT License along with this program.
+ If not, see <https://opensource.org/licenses/MIT>.
+
+ Open the config file to adjust options for:
+
+ Disabling piston interactions with your choice of specified blocks.
+
+ Disabling slime and honey block interactions with your choice of specified blocks.
+
+ Disabling dispenser interactions with your choice of specified items.
+
+ Configuring observer interactions.
+
+ Disabling Villager harvesting.
+
+ Allowing an exception for minecart interactions with slime/honey.
+

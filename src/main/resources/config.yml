@@ -1,5 +1,6 @@
-# The main purpose of this plugin is to disable selected blocks from being affected by pistons. 
-# This is useful to nerf farms or disable flying machines altogether.
+# The main purpose of this plugin is to disable selected blocks from being affected by pistons and other redstone elements.
+# This is useful to nerf farms or disable flying machines altogether, while still allowing other blocks to interact with pistons.
+# Villager crop harvesting can also be disabled to deter large villager auto farms.
 
 # After changing config, run command "/pn reload" in game or in console to finalize the changes.
 
